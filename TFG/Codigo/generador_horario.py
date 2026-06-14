@@ -1658,9 +1658,9 @@ with st.sidebar:
         num = len(st.session_state.df_asignaturas)
         st.markdown(f"<div style='border-top:1px solid #2e2e2e;margin-top:.75rem;padding-top:.65rem'><div style='font-family:IBM Plex Mono,monospace;font-size:.66rem;color:#4ade80'>✔ {num} {obtenerTexto('asigs')}</div></div>",
                     unsafe_allow_html=True)
-    primeraIntensificacion = primeraIntensificacion()
-    if primeraIntensificacion:
-        st.markdown(f"<div style='font-family:IBM Plex Mono,monospace;font-size:.64rem;color:#c084fc;margin-top:.3rem'>⬡ {NOMBRES_INTENSIFICACIONES.get(primeraIntensificacion, primeraIntensificacion)}</div>",
+    intensificacionActiva = primeraIntensificacion()
+    if intensificacionActiva:
+        st.markdown(f"<div style='font-family:IBM Plex Mono,monospace;font-size:.64rem;color:#c084fc;margin-top:.3rem'>⬡ {NOMBRES_INTENSIFICACIONES.get(intensificacionActiva, intensificacionActiva)}</div>",
                     unsafe_allow_html=True)
 
     st.markdown("<div style='border-top:1px solid #2e2e2e;margin-top:.7rem;padding-top:.7rem'></div>", unsafe_allow_html=True)
@@ -1679,12 +1679,12 @@ with st.sidebar:
                     claveFilas = aux[aux["Asignatura"] == claveAbreviaturas]
                     if claveFilas.empty:
                         continue
-                    primeraIntensificacion = get_intensificacionPorFila(claveFilas.iloc[0])
-                    if primeraIntensificacion is None:
+                    intensificacionActiva = get_intensificacionPorFila(claveFilas.iloc[0])
+                    if intensificacionActiva is None:
                         continue
                     if intensificacionSeleccionada is None:
-                        intensificacionSeleccionada = primeraIntensificacion
-                    elif primeraIntensificacion != intensificacionSeleccionada:
+                        intensificacionSeleccionada = intensificacionActiva
+                    elif intensificacionActiva != intensificacionSeleccionada:
                         asignaturasEliminadas.append(claveAbreviaturas)
                 for claveAbreviaturas in asignaturasEliminadas:
                     del selec[claveAbreviaturas]
