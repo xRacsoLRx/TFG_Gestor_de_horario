@@ -1789,8 +1789,8 @@ if st.session_state.seccion == "fuenteDatos":
             st.markdown(f"<div style='font-size:.82rem;color:#666;margin-bottom:.4rem'>{len(tablaProcesada)} {obtenerTexto('filas')} · {obtenerTexto('ordenar')}</div>", unsafe_allow_html=True)
             edicion = st.data_editor(tablaProcesada, use_container_width=True, num_rows="dynamic", key="editor",
                 column_config={
-                    "Código": st.column_config.NumberColumn("Código", format="%dia"),
-                    "Curso": st.column_config.NumberColumn("Curso", format="%dia"),
+                    "Código": st.column_config.NumberColumn("Código", format="%d"),
+                    "Curso": st.column_config.NumberColumn("Curso", format="%d"),
                     "Español": st.column_config.CheckboxColumn("🇪🇸 Español"),
                     "EF": st.column_config.CheckboxColumn("EF"),
                     "EN": st.column_config.CheckboxColumn("🇬🇧 EN"),
