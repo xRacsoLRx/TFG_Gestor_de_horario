@@ -1538,7 +1538,7 @@ def generarHorarioHTML(celdas, titulo):
     html += '<tr></thead><tbody>'
     for indice, hora in enumerate(horas):
         fondo = "#fff" if indice % 2 == 0 else "#fafaf8"
-        html += f'<tr style="background:{fondo}"><td style="padding:5px 8px;color:#999;font-size:.7rem;font-family:IBM Plex Mono,monospace;border-right:1px solid #eee;white-space:nowrap;vertical-align:middle">{hora}贩'
+        html += f'<tr style="background:{fondo}"><td style="padding:5px 8px;color:#999;font-size:.7rem;font-family:IBM Plex Mono,monospace;border-right:1px solid #eee;white-space:nowrap;vertical-align:middle">{hora}'
         for d_disp in DIAS:
             d_es = DIAS_ES[DIAS_EN.index(d_disp)] if st.session_state.idioma == "en" else d_disp
             celda = celdas.get((d_es, hora), "")
