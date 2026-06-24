@@ -1426,8 +1426,17 @@ def crearTabla(dataframe):
     return pandas.DataFrame(filas)
 
 def procesar_pdf(tamanio):
-    grupo_tablas1 = get_tablas(tamanio, [6])
-    grupo_tablas2 = get_tablas(tamanio, [7])
+    try:
+        grupo_tablas1 = get_tablas(tamanio, [6])
+        grupo_tablas2 = get_tablas(tamanio, [7])
+    except Exception:
+        try:
+            grupo_tablas1 = get_tablas(tamanio, [8])
+            grupo_tablas2 = get_tablas(tamanio, [9])
+        except Exception:
+            grupo_tablas1 = get_tablas(tamanio, [7])
+            grupo_tablas2 = get_tablas(tamanio, [8])
+            
     t1 = crearTabla(grupo_tablas1)
     t1["Cuatrimestre"] = "1"
     t2 = crearTabla(grupo_tablas2)
