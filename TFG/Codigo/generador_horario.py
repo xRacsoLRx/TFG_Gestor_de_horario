@@ -844,7 +844,7 @@ def get_supabase(clave):
          +"&select=valor")
     key=st.secrets["supabase"]["key"]
     req=urllib.request.Request(url, headers={"apikey": key, "Authorization": f"Bearer {key}"},)
-    with urllib.request.urlopen(req, tiemeout=10) as r:
+    with urllib.request.urlopen(req, timeout=10) as r:
         filas = json.loads(r.read())
     return filas[0]["valor"] if filas else None
 
