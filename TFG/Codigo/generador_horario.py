@@ -16,6 +16,7 @@ import pdfplumber
 import re # Las expresiones regulares que importa esta librería sirven para parsear correctamente el POD
 import streamlit as st
 import streamlit.components.v1 as componentes
+import urllib
 
 ###########################################################
 # Aquí está el CSS que he hecho para darle estilos a la
@@ -804,9 +805,7 @@ UI = {
 ###########################################################
 # Estas variables que se presentan a continuación sirven
 # para mantener los cambios entre diferentes sesiones
-# una vez desplegado el servidor. En modo local no
-# funciona, pues se reinician los cambios cada vez y no hay
-# almacenamiento.
+# una vez desplegado el servidor.
 ###########################################################
 
 DIRECTORIO = os.path.join(os.path.dirname(__file__) if "__file__" in dir() else ".", ".pod_data")
@@ -815,14 +814,56 @@ IDIOMAS = os.path.join(DIRECTORIO, "lang_overrides.json")
 
 PSWD = "horario2025"
 
+def usarSupabase():
+    try:
+        return bool(st.secrets.get("supabase", {}).get("url"))
+    except Exception:
+        return False
+
+def set_supabase(clave, valor):
+    url = st.secrets["supabase"]["url"]+"pod_datos"
+    key=st.secrets["supabase"]["key"]
+    payload = json.dumps({"clave": clave, "valor": valor, "actualizado": None}).encode()
+    req=urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
+            "Prefer": "resolution=merge-duplicates",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=10): pass
+
+def get_supabase(clave):
+    url=(st.secrets["supabase"]["url"]
+         +"pod_datos?clave=eq."
+         +urllib.parse.quote(clave)
+         +"&select=valor")
+    key=st.secrets["supabase"]["key"]
+    req=urllib.request.Request(url, headers={"apikey": key, "Authorization": f"Bearer {key}"},)
+    with urllib.request.urlopen(req, tiemeout=10) as r:
+        filas = json.loads(r.read())
+    return filas[0]["valor"] if filas else None
+
 def comprobar_directorio():
     os.makedirs(DIRECTORIO, exist_ok=True)
 
 def guardar_cambios(asig, cambiaIdiomas):
     try:
         comprobar_directorio()
-        if asig is not None and not asig.empty: asig.to_parquet(ASIGNATURAS, index=False)
-        with open(IDIOMAS, "w", encoding="utf-8") as f: json.dump({str(k): v for k, v in cambiaIdiomas.items()}, f, ensure_ascii=False)
+        if not usarSupabase():
+            if asig is not None and not asig.empty: asig.to_parquet(ASIGNATURAS, index=False)
+            with open(IDIOMAS, "w", encoding="utf-8") as f: json.dump({str(k): v for k, v in cambiaIdiomas.items()}, f, ensure_ascii=False)
+        else:
+            if asig is not None and not asig.empty:
+                buffer=io.BytesIO()
+                asig.to_parquet(buffer, index=False)
+                set_supabase("asignaturas", base64.b64encode(buffer.getvalue()).decode())
+            set_supabase("idiomas", json.dumps({str(clave): valor for clave, valor in cambiaIdiomas.items()}, ensure_ascii=False))
+
     except Exception:
         pass
 
@@ -831,17 +872,21 @@ def cargar_cambios():
     idiomas = {}
 
     try:
-        if os.path.exists(ASIGNATURAS): asignaturas = pandas.read_parquet(ASIGNATURAS)
+        if usarSupabase():
+            datos_materias = get_supabase("asignaturas")
+            if datos_materias:
+                asignaturas=pandas.read_parquet(io.BytesIO(base64.b64decode(datos_materias)))
+            
+            datos_idiomas = get_supabase("idiomas")
+            if datos_idiomas:
+                idiomas = {int(clave): valor for clave, valor in json.loads(datos_idiomas).items()}
+        else:
+            if os.path.exists(ASIGNATURAS): asignaturas = pandas.read_parquet(ASIGNATURAS)
+            if os.path.exists(IDIOMAS): 
+                with open(IDIOMAS, "r", encoding="utf-8") as f:
+                    idiomas = {int(clave): valor for clave, valor in json.load(f).items()}
     except Exception:
         pass
-
-    try:
-        if os.path.exists(IDIOMAS):
-            with open(IDIOMAS, "r", encoding="utf-8") as f: datos = json.load(f)
-            idiomas = {int(k): v for k, v in datos.items()}
-    except Exception:
-        pass
-
     return asignaturas, idiomas
 
 ###########################################################

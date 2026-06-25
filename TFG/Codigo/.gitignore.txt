@@ -1,0 +1,16 @@
+# Secretos
+.streamlit/secrets.toml
+
+# Datos locales del POD
+.pod_data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Entornos virtuales
+venv/
+.venv/
+env/
